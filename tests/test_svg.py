@@ -71,6 +71,27 @@ def test_svg_marks_the_full_card_as_clickable():
     assert 'fill="transparent"' in fallback_svg
 
 
+def test_svg_rounds_the_title_bar_top_corners_without_clip_paths():
+    svg = svg_builder.build_svg(
+        ["@@@"],
+        get_theme(ThemeName.DARK),
+        "2024-01-01",
+        "https://example.com/",
+    )
+    fallback_svg = svg_builder.build_fallback_svg(
+        get_theme(ThemeName.LIGHT),
+        "2024-01-01",
+        "https://example.com/",
+    )
+
+    assert '<clipPath' not in svg
+    assert f'height="{svg_builder.TITLE_H - svg_builder.CARD_RADIUS}"' in svg
+    assert f'y="{svg_builder.CARD_RADIUS}"' in svg
+    assert '<clipPath' not in fallback_svg
+    assert f'height="{svg_builder.TITLE_H - svg_builder.CARD_RADIUS}"' in fallback_svg
+    assert f'y="{svg_builder.CARD_RADIUS}"' in fallback_svg
+
+
 def test_fallback_svg_uses_standard_widget_dimensions():
     svg = svg_builder.build_fallback_svg(
         get_theme(ThemeName.DARK),

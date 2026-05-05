@@ -18,6 +18,7 @@ TEXT_X = ACCENT_X + ACCENT_W + 8
 TITLE_Y = 16
 SUBTITLE_Y = 28
 SUBTITLE_TEXT = "New Pokémon daily at 00:00 UTC"
+CARD_RADIUS = 6
 
 
 def _card_dimensions(cols: int, rows: int) -> tuple[int, int]:
@@ -82,18 +83,22 @@ def build_svg(
   <!-- 1. Card background fill — no stroke so border is never clipped -->
   <rect x="0" y="0"
         width="{card_w}" height="{card_h}"
-        rx="6"
+        rx="{CARD_RADIUS}"
         fill="{theme['card_bg']}"/>
 
-  <!-- 2. Title bar — drawn after card bg so corners are naturally hidden -->
+  <!-- 2. Title bar — rounded at the top, squared off at the bottom -->
   <rect x="0" y="0"
         width="{card_w}" height="{TITLE_H}"
+        rx="{CARD_RADIUS}"
+        fill="{theme['bg']}"/>
+  <rect x="0" y="{CARD_RADIUS}"
+        width="{card_w}" height="{TITLE_H - CARD_RADIUS}"
         fill="{theme['bg']}"/>
 
   <!-- 3. Border drawn last so it always sits on top, never clipped -->
   <rect x="0" y="0"
         width="{card_w}" height="{card_h}"
-        rx="6"
+        rx="{CARD_RADIUS}"
         fill="none"
         stroke="{theme['border']}"
         stroke-width="0.5"/>
@@ -102,7 +107,7 @@ def build_svg(
 
     <rect x="0" y="0"
           width="{card_w}" height="{card_h}"
-          rx="6"
+          rx="{CARD_RADIUS}"
           fill="transparent"/>
 
     <!-- Header accent -->
@@ -167,16 +172,20 @@ def build_fallback_svg(
 
   <rect x="0" y="0"
         width="{card_w}" height="{card_h}"
-        rx="6"
+        rx="{CARD_RADIUS}"
         fill="{theme['card_bg']}"/>
 
   <rect x="0" y="0"
         width="{card_w}" height="{TITLE_H}"
+        rx="{CARD_RADIUS}"
+        fill="{theme['bg']}"/>
+  <rect x="0" y="{CARD_RADIUS}"
+        width="{card_w}" height="{TITLE_H - CARD_RADIUS}"
         fill="{theme['bg']}"/>
 
   <rect x="0" y="0"
         width="{card_w}" height="{card_h}"
-        rx="6"
+        rx="{CARD_RADIUS}"
         fill="none"
         stroke="{theme['border']}"
         stroke-width="0.5"/>
@@ -185,7 +194,7 @@ def build_fallback_svg(
 
     <rect x="0" y="0"
           width="{card_w}" height="{card_h}"
-          rx="6"
+          rx="{CARD_RADIUS}"
           fill="transparent"/>
 
     <rect x="{ACCENT_X}" y="{ACCENT_Y}"

@@ -5,37 +5,35 @@ A self-hosted GitHub README widget that picks one Pokemon per UTC day, converts 
 Use the hosted widget in a README like this:
 
 ```markdown
-[![Daily Pokemon ASCII](https://readme-pokemon-ascii.vercel.app/api)](https://readme-pokemon-ascii.vercel.app/)
+[![Daily Pokemon ASCII](https://readme-pokemon-ascii.vercel.app/)](https://github.com/lengweih/readme-pokemon-ascii)
 ```
-
-That outer README link is the reliable way to make GitHub clicks go to this project, because GitHub proxies external images through Camo. The Vercel root path then redirects to the GitHub repository.
 
 If you want a centered version, you can also use HTML:
 
 ```html
 <p align="center">
   <a href="https://readme-pokemon-ascii.vercel.app/">
-    <img src="https://readme-pokemon-ascii.vercel.app/api" alt="Daily Pokemon ASCII" />
+    <img src="https://readme-pokemon-ascii.vercel.app/" alt="Daily Pokemon ASCII" />
   </a>
 </p>
 ```
 
-If you want to inspect the hosted SVG page itself, open `https://readme-pokemon-ascii.vercel.app/api` directly in a browser.
+If you want to inspect the hosted SVG page itself, open `https://readme-pokemon-ascii.vercel.app/` directly in a browser.
 
 ## Endpoint
 
-The widget is served from `/api`.
+The widget is served from `/`.
 
-- `GET /api` returns the dark theme by default.
-- `GET /api?theme=light` returns the light theme.
-- `/` redirects to the GitHub repo: `https://github.com/lengweih/readme-pokemon-ascii`.
+- `GET /` returns the dark theme by default.
+- `GET /?theme=light` returns the light theme.
+- `GET /?theme=dark` returns the same default dark theme explicitly.
 - `/docs` serves the built-in Swagger UI.
 - `/api/internal/prewarm` exists for the daily cron prewarm and is not shown in the docs.
 
 For local development only, you can also pass `debug_date=YYYY-MM-DD` to preview a specific day:
 
 ```text
-http://127.0.0.1:8000/api?theme=dark&debug_date=2024-03-14
+http://127.0.0.1:8000/?theme=dark&debug_date=2024-03-14
 ```
 
 `debug_date` is rejected on non-local hosts.
@@ -95,8 +93,8 @@ uvicorn api.index:app --reload --port 8000
 Then open one of these URLs:
 
 ```text
-http://127.0.0.1:8000/api
-http://127.0.0.1:8000/api?theme=light
+http://127.0.0.1:8000/
+http://127.0.0.1:8000/?theme=light
 http://127.0.0.1:8000/docs
 ```
 
@@ -123,7 +121,7 @@ The tests cover:
 - ASCII conversion behavior
 - Pokemon selection, local name lookup, and artwork fetching
 - SVG escaping and fallback rendering
-- API route behavior, headers, redirects, and debug-date restrictions
+- API route behavior, headers, and debug-date restrictions
 
 ## Deployment
 
@@ -138,7 +136,7 @@ vercel --prod
 After deployment, the widget URL is:
 
 ```text
-https://your-project.vercel.app/api
+https://your-project.vercel.app/
 ```
 
 ## Notes
@@ -154,9 +152,6 @@ This project relies on a few third-party resources:
 
 - [PokéAPI](https://pokeapi.co/) for the Pokémon species list used to generate [core/pokemon_names.txt](/Users/ricky/Workspace/python/readme-pokemon-ascii/core/pokemon_names.txt).
 - [PokéAPI sprites repository](https://github.com/PokeAPI/sprites) for the official artwork images served from GitHub.
-- [FastAPI](https://fastapi.tiangolo.com/) for the HTTP app and `/docs` interface.
-- [Pillow](https://python-pillow.org/) for image loading, enhancement, and resizing.
-- [Vercel](https://vercel.com/) for deployment and CDN caching of the widget endpoint.
 
 
 ## Disclaimer

@@ -4,7 +4,7 @@ from datetime import date, datetime, timedelta, timezone
 from typing import TypedDict
 
 from fastapi import FastAPI, HTTPException, Query, Request
-from fastapi.responses import RedirectResponse, Response
+from fastapi.responses import Response
 
 from core.ascii_converter import center_blank_rows, image_to_ascii
 from core.image_fetcher import fetch_image, resize_for_ascii
@@ -180,7 +180,7 @@ def _get_or_render_svg(
 
 
 @app.get(
-    "/api",
+    "/",
     response_class=Response,
     responses={200: {"content": {"image/svg+xml": {}}}},
     summary="Get today's Pokemon ASCII art",
@@ -226,11 +226,8 @@ def prewarm(request: Request) -> PrewarmResponse:
     for theme in (ThemeName.DARK, ThemeName.LIGHT):
         _svg, status = _get_or_render_svg(date_str, theme)
         results[theme.value] = status.value
-        logger.info("[prewarm] date=%s theme=%s status=%s", date_str, theme.value, status.value)
+        logger.info(
+            "[prewarm] date=%s theme=%s status=%s", date_str, theme.value, status.value
+        )
 
     return {"date": date_str, "results": results}
-
-
-@app.get("/", include_in_schema=False)
-def root() -> RedirectResponse:
-    return RedirectResponse(url=GITHUB_REPO_URL)

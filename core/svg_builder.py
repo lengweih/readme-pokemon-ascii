@@ -98,7 +98,12 @@ def build_svg(
         stroke="{theme['border']}"
         stroke-width="0.5"/>
 
-  <a href="{html.escape(github_url)}" target="_blank" rel="noopener noreferrer">
+  <a href="{html.escape(github_url)}" target="_blank" rel="noopener noreferrer" style="cursor: pointer;">
+
+    <rect x="0" y="0"
+          width="{card_w}" height="{card_h}"
+          rx="6"
+          fill="transparent"/>
 
     <!-- Header accent -->
     <rect x="{ACCENT_X}" y="{ACCENT_Y}"
@@ -176,7 +181,12 @@ def build_fallback_svg(
         stroke="{theme['border']}"
         stroke-width="0.5"/>
 
-  <a href="{html.escape(github_url)}" target="_blank" rel="noopener noreferrer">
+  <a href="{html.escape(github_url)}" target="_blank" rel="noopener noreferrer" style="cursor: pointer;">
+
+    <rect x="0" y="0"
+          width="{card_w}" height="{card_h}"
+          rx="6"
+          fill="transparent"/>
 
     <rect x="{ACCENT_X}" y="{ACCENT_Y}"
           width="{ACCENT_W}" height="{ACCENT_H}"

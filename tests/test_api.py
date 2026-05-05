@@ -11,7 +11,7 @@ def _make_request(
     *,
     host: str = "localhost",
     scheme: str = "http",
-    path: str = "/api",
+    path: str = "/",
     method: str = "GET",
     query: str = "",
     headers: dict[str, str] | None = None,
@@ -36,7 +36,7 @@ def _make_request(
     return Request(scope)
 
 
-def test_widget_returns_svg_and_cache_headers(monkeypatch: pytest.MonkeyPatch):
+def test_root_returns_svg_and_cache_headers(monkeypatch: pytest.MonkeyPatch):
     captured: dict[str, str] = {}
     monkeypatch.setattr(api_index, "load_cached_svg", lambda *_args: None)
     monkeypatch.setattr(api_index, "save_cached_svg", lambda *_args: None)
@@ -82,7 +82,9 @@ def test_widget_returns_svg_and_cache_headers(monkeypatch: pytest.MonkeyPatch):
 
 
 def test_widget_returns_cached_svg_without_rendering(monkeypatch: pytest.MonkeyPatch):
-    monkeypatch.setattr(api_index, "load_cached_svg", lambda *_args: "<svg>cached</svg>")
+    monkeypatch.setattr(
+        api_index, "load_cached_svg", lambda *_args: "<svg>cached</svg>"
+    )
     monkeypatch.setattr(
         api_index,
         "fetch_image",
@@ -126,7 +128,8 @@ def test_prewarm_local_override_generates_both_themes(monkeypatch: pytest.Monkey
         api_index,
         "_render_svg",
         lambda date_str, theme, github_url: (
-            render_calls.append((date_str, theme, github_url)) or f"<svg>{theme.value}</svg>",
+            render_calls.append((date_str, theme, github_url))
+            or f"<svg>{theme.value}</svg>",
             api_index.RenderStatus.SUCCESS,
         ),
     )
@@ -145,8 +148,16 @@ def test_prewarm_local_override_generates_both_themes(monkeypatch: pytest.Monkey
         "results": {"dark": "generated", "light": "generated"},
     }
     assert render_calls == [
-        ("2024-03-15", api_index.ThemeName.DARK, "https://github.com/lengweih/readme-pokemon-ascii"),
-        ("2024-03-15", api_index.ThemeName.LIGHT, "https://github.com/lengweih/readme-pokemon-ascii"),
+        (
+            "2024-03-15",
+            api_index.ThemeName.DARK,
+            "https://github.com/lengweih/readme-pokemon-ascii",
+        ),
+        (
+            "2024-03-15",
+            api_index.ThemeName.LIGHT,
+            "https://github.com/lengweih/readme-pokemon-ascii",
+        ),
     ]
     assert save_calls == [
         ("<svg>dark</svg>", "2024-03-15", "dark"),
@@ -192,7 +203,9 @@ def test_prewarm_rejects_unauthorized_remote_requests():
     assert exc_info.value.status_code == 401
 
 
-def test_prewarm_allows_remote_requests_with_cron_secret(monkeypatch: pytest.MonkeyPatch):
+def test_prewarm_allows_remote_requests_with_cron_secret(
+    monkeypatch: pytest.MonkeyPatch,
+):
     monkeypatch.setenv(api_index.CRON_SECRET_ENV_VAR, "secret-value")
     monkeypatch.setattr(
         api_index,
@@ -258,15 +271,6 @@ def test_widget_falls_back_when_pipeline_raises(monkeypatch: pytest.MonkeyPatch)
     assert "image unavailable" in bytes(response.body).decode("utf-8")
 
 
-def test_root_redirects_to_github_repo():
-    response = api_index.root()
-
-    assert (
-        response.headers["location"]
-        == "https://github.com/lengweih/readme-pokemon-ascii"
-    )
-
-
 def test_app_routes_expose_expected_paths():
     paths = {
         path
@@ -274,6 +278,5 @@ def test_app_routes_expose_expected_paths():
         if (path := getattr(route, "path", None)) is not None
     }
 
-    assert "/api" in paths
+    assert "/" in paths
     assert "/api/internal/prewarm" in paths
-    assert "/api/widget" not in paths

@@ -5,7 +5,7 @@ A self-hosted GitHub README widget that picks one Pokemon per UTC day, converts 
 Use the hosted widget in a README like this:
 
 ```markdown
-[![Daily Pokemon ASCII](https://readme-pokemon-ascii.vercel.app/)](https://github.com/lengweih/readme-pokemon-ascii)
+[![Daily Pokemon ASCII](https://readme-pokemon-ascii.vercel.app/)](https://readme-pokemon-ascii.vercel.app/)
 ```
 
 If you want a centered version, you can also use HTML:

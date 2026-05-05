@@ -2,20 +2,40 @@
 
 A self-hosted GitHub README widget that picks one Pokemon per UTC day, converts its official artwork into ASCII, and serves the result as an SVG.
 
-Use the hosted widget in a README like this:
+Use the hosted widget in a README like this if you want it to follow the viewer's GitHub light/dark appearance automatically:
 
-```markdown
-[![Daily Pokemon ASCII](https://readme-pokemon-ascii.vercel.app/)](https://readme-pokemon-ascii.vercel.app/)
+```html
+<a href="https://readme-pokemon-ascii.vercel.app/">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://readme-pokemon-ascii.vercel.app/?theme=dark">
+    <source media="(prefers-color-scheme: light)" srcset="https://readme-pokemon-ascii.vercel.app/?theme=light">
+    <img alt="Daily Pokemon ASCII" src="https://readme-pokemon-ascii.vercel.app/" />
+  </picture>
+</a>
 ```
 
-If you want a centered version, you can also use HTML:
+If you want a centered dynamic version, you can wrap the same `<picture>` block like this:
 
 ```html
 <p align="center">
   <a href="https://readme-pokemon-ascii.vercel.app/">
-    <img src="https://readme-pokemon-ascii.vercel.app/" alt="Daily Pokemon ASCII" />
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://readme-pokemon-ascii.vercel.app/?theme=dark">
+      <source media="(prefers-color-scheme: light)" srcset="https://readme-pokemon-ascii.vercel.app/?theme=light">
+      <img alt="Daily Pokemon ASCII" src="https://readme-pokemon-ascii.vercel.app/" />
+    </picture>
   </a>
 </p>
+```
+
+If you prefer a fixed theme, you can use one of these simpler embeds instead:
+
+```markdown
+![Daily Pokemon ASCII](https://readme-pokemon-ascii.vercel.app/?theme=dark)
+```
+
+```markdown
+![Daily Pokemon ASCII](https://readme-pokemon-ascii.vercel.app/?theme=light)
 ```
 
 If you want to inspect the hosted SVG page itself, open `https://readme-pokemon-ascii.vercel.app/` directly in a browser.

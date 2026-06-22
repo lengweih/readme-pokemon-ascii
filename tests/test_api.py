@@ -73,6 +73,7 @@ def test_root_returns_svg_and_cache_headers(monkeypatch: pytest.MonkeyPatch):
     assert response.body == b"<svg>ok</svg>"
     assert response.headers["content-type"].startswith("image/svg+xml")
     assert response.headers["cache-control"] == "no-cache, max-age=0, must-revalidate"
+    assert response.headers["vercel-cdn-cache-control"] == api_index.EDGE_CACHE_CONTROL
     assert "etag" not in response.headers
     assert captured == {
         "date_str": "2024-03-14",
@@ -247,6 +248,9 @@ def test_widget_falls_back_when_image_fetch_fails(monkeypatch: pytest.MonkeyPatc
     assert "2024-03-14" in body
     assert 'width="308"' in body
     assert 'height="321"' in body
+    # Fallbacks must not be edge-cached, so a transient error is not pinned at the edge.
+    assert "vercel-cdn-cache-control" not in response.headers
+    assert response.headers["cache-control"] == "no-cache, max-age=0, must-revalidate"
 
 
 def test_widget_falls_back_when_pipeline_raises(monkeypatch: pytest.MonkeyPatch):

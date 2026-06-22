@@ -1,3 +1,4 @@
+import hmac
 import os
 from enum import Enum, auto
 from datetime import date, datetime, timedelta, timezone
@@ -19,6 +20,12 @@ LOCAL_HOSTS = {"127.0.0.1", "localhost", "::1"}
 GITHUB_REPO_URL = "https://github.com/lengweih/readme-pokemon-ascii"
 CRON_SECRET_ENV_VAR = "CRON_SECRET"
 FALLBACK_MESSAGE = "image unavailable"
+DOWNSTREAM_CACHE_CONTROL = "no-cache, max-age=0, must-revalidate"
+EDGE_CACHE_SECONDS = 300
+EDGE_CACHE_CONTROL = (
+    f"public, s-maxage={EDGE_CACHE_SECONDS}, "
+    f"stale-while-revalidate={EDGE_CACHE_SECONDS}"
+)
 
 
 class RenderStatus(Enum):
@@ -63,7 +70,7 @@ def _is_authorized_cron_request(request: Request) -> bool:
 
     secret = os.environ.get(CRON_SECRET_ENV_VAR, "").strip()
     auth_header = request.headers.get("authorization", "")
-    return bool(secret) and auth_header == f"Bearer {secret}"
+    return bool(secret) and hmac.compare_digest(auth_header, f"Bearer {secret}")
 
 
 def _require_authorized_cron_request(request: Request) -> None:
@@ -202,16 +209,22 @@ def widget(
         "yes" if "debug_date" in request.query_params else "no",
     )
 
-    svg, _status = _get_or_render_svg(date_str, theme)
+    svg, status = _get_or_render_svg(date_str, theme)
+
+    headers = {
+        "Cache-Control": DOWNSTREAM_CACHE_CONTROL,
+        "Vary": "Accept-Encoding",
+        "X-Content-Type-Options": "nosniff",
+    }
+    # Only let the edge cache real renders. Fallbacks (upstream failure) are left
+    # uncacheable so a transient error is not pinned at the edge for the whole TTL.
+    if status is not SvgResultStatus.FALLBACK:
+        headers["Vercel-CDN-Cache-Control"] = EDGE_CACHE_CONTROL
 
     return Response(
         content=svg,
         media_type="image/svg+xml",
-        headers={
-            "Cache-Control": "no-cache, max-age=0, must-revalidate",
-            "Vary": "Accept-Encoding",
-            "X-Content-Type-Options": "nosniff",
-        },
+        headers=headers,
     )
 
 

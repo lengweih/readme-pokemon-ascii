@@ -14,6 +14,8 @@ SHUFFLE_EPOCH = date(2026, 1, 1)
 SHUFFLE_SEED = "readme-pokemon-ascii-v1"
 ARTWORK_URL = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/{number}.png"
 FETCH_TIMEOUT = 8
+MAX_DOWNLOAD_BYTES = 10 * 1024 * 1024
+MAX_IMAGE_PIXELS = 16_000_000
 TARGET_WIDTH = 80
 MIN_HEIGHT = 10
 MAX_HEIGHT = 35
@@ -63,15 +65,16 @@ def fetch_image(date_str: str) -> tuple[Image.Image | None, str | None]:
     )
 
     try:
-        response = requests.get(
-            url,
-            timeout=FETCH_TIMEOUT,
-            headers={"User-Agent": USER_AGENT},
-        )
-        response.raise_for_status()
+        content = _download_capped(url)
 
-        img = Image.open(BytesIO(response.content)).convert("RGBA")
+        img = Image.open(BytesIO(content))
+        pixels = img.size[0] * img.size[1]
+        if pixels > MAX_IMAGE_PIXELS:
+            raise ValueError(
+                f"image too large: {pixels} pixels exceeds cap {MAX_IMAGE_PIXELS}"
+            )
 
+        img = img.convert("RGBA")
         background = Image.new("RGBA", img.size, (255, 255, 255, 255))
         background.paste(img, mask=img.split()[3])
         img = background.convert("RGB")
@@ -80,6 +83,33 @@ def fetch_image(date_str: str) -> tuple[Image.Image | None, str | None]:
     except (requests.RequestException, OSError, ValueError):
         logger.exception("[fetch] image failed date=%s pokemon=%s", date_str, number)
         return None, None
+
+
+def _download_capped(url: str) -> bytes:
+    """Download a URL, refusing responses larger than MAX_DOWNLOAD_BYTES."""
+    with requests.get(
+        url,
+        timeout=FETCH_TIMEOUT,
+        headers={"User-Agent": USER_AGENT},
+        stream=True,
+    ) as response:
+        response.raise_for_status()
+
+        declared = response.headers.get("Content-Length")
+        if declared is not None and int(declared) > MAX_DOWNLOAD_BYTES:
+            raise ValueError(
+                f"declared size {declared} exceeds cap {MAX_DOWNLOAD_BYTES}"
+            )
+
+        chunks: list[bytes] = []
+        total = 0
+        for chunk in response.iter_content(chunk_size=64 * 1024):
+            total += len(chunk)
+            if total > MAX_DOWNLOAD_BYTES:
+                raise ValueError(f"download exceeded cap {MAX_DOWNLOAD_BYTES} bytes")
+            chunks.append(chunk)
+
+        return b"".join(chunks)
 
 
 def resize_for_ascii(img: Image.Image) -> Image.Image:
